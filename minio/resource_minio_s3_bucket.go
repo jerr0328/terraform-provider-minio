@@ -209,7 +209,7 @@ func minioUpdateBucket(ctx context.Context, d *schema.ResourceData, meta interfa
 	}
 
 	if d.HasChange("versioning") {
-		if err := resourceMinioS3BucketVersioningUpdate(d, meta); err != nil {
+		if err := resourceMinioS3BucketVersioningUpdate(ctx, d, meta); err != nil {
 			return err
 		}
 	}
@@ -343,7 +343,7 @@ func validateS3BucketName(value string) error {
 	return nil
 }
 
-func resourceMinioS3BucketVersioningUpdate(d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceMinioS3BucketVersioningUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var err error
 
 	bucketConfig := BucketConfig(d, meta)
@@ -353,13 +353,12 @@ func resourceMinioS3BucketVersioningUpdate(d *schema.ResourceData, meta interfac
 		//version := bucketVersion[0].(map[string]interface{})
 
 		if bucketVersion["enabled"].(bool) {
-			err = bucketConfig.MinioClient.EnableVersioning(context.Background(), bucketConfig.MinioBucket)
-
+			err = bucketConfig.MinioClient.EnableVersioning(ctx, bucketConfig.MinioBucket)
 		} else {
-			err = bucketConfig.MinioClient.SuspendVersioning(context.Background(), bucketConfig.MinioBucket)
+			err = bucketConfig.MinioClient.SuspendVersioning(ctx, bucketConfig.MinioBucket)
 		}
 	} else {
-		err = bucketConfig.MinioClient.SuspendVersioning(context.Background(), bucketConfig.MinioBucket)
+		err = bucketConfig.MinioClient.SuspendVersioning(ctx, bucketConfig.MinioBucket)
 	}
 
 	if err != nil {
